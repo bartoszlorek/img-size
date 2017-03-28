@@ -1,0 +1,20 @@
+
+.container {
+    position: relative;
+    overflow: hidden;
+}
+.img-size {
+    position: absolute;
+    left: 50%; top: 50%;
+    -webkit-transform: translate(-50%,-50%);
+            transform: translate(-50%,-50%);
+}
+.img-size,
+.img-size-h {
+    width: 100%;
+    height: auto;
+}
+.img-size-v {
+    width: auto; 
+    height: 100%;
+}

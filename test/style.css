@@ -1,0 +1,8 @@
+
+.container {
+    width: 50%;
+    height: 45vh;
+    max-width: 450px;
+    margin: 3.33vh auto;
+    background: #f2f2f2;
+}
