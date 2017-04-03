@@ -2,10 +2,12 @@ var webpack = require('webpack');
 var path = require('path');
 
 module.exports = {
-    entry: './src/img-size.js',
+    entry: './src/imageBinding.js',
     output: {
         path: path.join(__dirname, 'dist'),
-        filename: 'img-size.min.js'
+        filename: 'img-size.min.js',
+        library: 'imgSize',
+        libraryTarget: 'umd'
     },
     module: {
         loaders: [
@@ -17,6 +19,6 @@ module.exports = {
         ]
     },
     plugins: [
-        //new webpack.optimize.OccurrenceOrderPlugin()
+        new webpack.optimize.OccurrenceOrderPlugin()
     ]
 }

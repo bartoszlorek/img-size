@@ -1,12 +1,10 @@
-import loadImage from './load-image.js';
-import addResize from './resize.js';
+import loadImage from './loadImage.js';
 
 const HORIZONTAL = 'img-size-h';
 const VERTICAL = 'img-size-v';
 const COVER = 'img-size-cover';
 const CONTAIN = 'img-size-contain';
 const regex = new RegExp('\\s*('+ HORIZONTAL +'|'+ VERTICAL +')');
-
 
 function edgeOffset(imageRatio, parent) {
     let parentWidth = parent.clientWidth,
@@ -35,7 +33,7 @@ function sizeType(image) {
     return COVER;
 }
 
-function imageResize(image) {
+export default function imageResize(image) {
     let imageRatio,
         direction;
 
@@ -57,55 +55,3 @@ function imageResize(image) {
         })
     }
 }
-
-const bindedImages = (() => {
-    let images = [];
-    let onResize = addResize(() => {
-        let length = images.length;
-        for (let i=0; i<length; i++) {
-            images[i].action();
-        }
-    }, 100, 100);
-
-    function addImage(element) {
-        images.push({
-            image: element,
-            action: imageResize(element)
-        })
-    }
-    return {
-        add: function(element) {
-            if (! element) return;
-            if (element.nodeType) {
-                addImage(element);
-            }
-            else if (element.length) {
-                let length = element.length;
-                for (let i=0; i<length; i++) {
-                    addImage(element[i]);
-                }
-            }
-            return this;
-        },
-        remove: function(element) {
-            if (element && element.nodeType) {
-                images = images.filter(item =>
-                    item.image !== element)
-            }
-            return this;
-        },
-        call: function() {
-            onResize();
-            return this;
-        },
-        get items() {
-            return images;
-        }
-    }
-})();
-
-
-let images = document.getElementsByClassName('img-size'),
-    wide = document.getElementById('img-wide');
-
-bindedImages.add(images).call();
