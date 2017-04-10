@@ -2,79 +2,65 @@ import loadImage from './utils/loadImage.js';
 
 const HORIZONTAL = 'img-size-h';
 const VERTICAL = 'img-size-v';
-const TYPES = {
-    cover: 'img-size-cover',
-    contain: 'img-size-contain'
-}
+const COVER = 'img-size-cover';
+const CONTAIN = 'img-size-contain';
 
 const regex = new RegExp('\\s*('+ HORIZONTAL +'|'+ VERTICAL +')');
+const sizeCover = sizeMethod(offset => offset.width > offset.height);
+const sizeContain = sizeMethod(offset => offset.width < offset.height);
 
-function edgeOffset(imageRatio, parent) {
+function edgeOffset(aspect, parent) {
     let parentWidth = parent.clientWidth,
         parentHeight = parent.clientHeight,
-        boundWidth = parentHeight * imageRatio,
-        boundHeight = parentWidth / imageRatio;
+        boundWidth = parentHeight * aspect,
+        boundHeight = parentWidth / aspect;
     return {
         width: parentWidth - boundWidth,
         height: parentHeight - boundHeight
     }
 }
 
-function sizeCover(imageRatio, parent) {
-    let offset = edgeOffset(imageRatio, parent);
-    return offset.width > offset.height
-        ? HORIZONTAL : VERTICAL;
-}
-
-function sizeContain(imageRatio, parent) {
-    let offset = edgeOffset(imageRatio, parent);
-    return offset.width < offset.height
-        ? HORIZONTAL : VERTICAL;
-}
-
-function sizeTypeDefault(type) {
-    return TYPES.hasOwnProperty(type)
-        ? TYPES[type] : TYPES.cover;
-}
-
-function sizeTypeClass(className) {
-    className = className.split(' ').reverse();
-    for (let type in TYPES) {
-        if (className.indexOf(TYPES[type]) > -1)
-            return TYPES[type];
-    } return false;
-}
-
-export default class Image {
-    constructor(image, sizeType) {
-        this.image = image;
-        this.sizeType = sizeTypeDefault(sizeType);
-        this.direction = null;
-        this.refresh();
+function sizeMethod(callback) {
+    return function(aspect, parent) {
+        let offset = edgeOffset(aspect, parent);
+        return callback.call(null, offset)
+            ? HORIZONTAL : VERTICAL;
     }
+}
 
-    resize() {
-        loadImage(this.image, (size) => {
-            if (! this.imageRatio) {
-                  this.imageRatio = size.height > 0
-                ? size.width / size.height
-                : 0;
-            }
-            let method = this.sizeType === TYPES.cover ? sizeCover : sizeContain,
-                newDirection = method(this.imageRatio, this.image.parentElement);
-            if (newDirection === this.direction) {
+function sizeType(element) {
+    return function(className) {
+        return element.className.indexOf(className) > -1;
+    }
+}
+
+function createImage(element) {
+    let direction,
+        aspect;
+
+    const isSizeType = sizeType(element);
+
+    function resize() {
+         loadImage(element, (size) => {
+            if (  size.height === 0) return;
+            if (! aspect) aspect = size.width / size.height;
+
+            let method = isSizeType(CONTAIN) ? sizeContain : sizeCover,
+            newDirection = method(aspect, element.parentElement);
+            if (newDirection === direction) {
                 return;
             }
-            this.direction = newDirection;
-            this.image.className = this.image.className.replace(regex, '');
-            this.image.className += ' ' + this.direction;
+            direction = newDirection;
+            element.className = element.className.replace(regex, '');
+            element.className += ' ' + direction;
         })
     }
 
-    refresh() {
-        let sizeType = sizeTypeClass(this.image.className);
-        if (sizeType !== false) this.sizeType = sizeType;
-        this.resize();
+    resize();
+    return {
+        image: element,
+        resize
     }
-
 }
+
+export default createImage;

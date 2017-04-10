@@ -1,25 +1,22 @@
 import addResize from './utils/eventResize.js';
-import Image from './Image.js';
+import createImage from './image.js';
 
 const images = [];
 const onResize = addResize(() => {
-    for (let i=0, len=images.length; i<len; i++) {
-        images[i].resize();
-    }
+    images.forEach(img => img.resize());
 }, 50, 100);
 
-function addImage(element, sizeType) {
+function addImage(element) {
     if (element && element.nodeType) {
-        images.push(new Image(element, sizeType))
+        images.push(createImage(element))
     }
 }
 
 module.exports = {
-    add: function(element, sizeType) {
-        if (element && element.length) {
-            for (let i=0, len=element.length; i<len; i++)
-               addImage(element[i], sizeType);
-        } else addImage(element, sizeType);
+    add: function(element) {
+        if (element && element.length)
+            element.forEach(item => addImage(item));
+        else addImage(element);
         return this;
     },
 
@@ -31,13 +28,6 @@ module.exports = {
             if (index !== -1) {
                 images.splice(index, 1);
             }
-        }
-        return this;
-    },
-
-    refresh: function() {
-        for (let i=0, len=images.length; i<len; i++) {
-            images[i].refresh();
         }
         return this;
     }
