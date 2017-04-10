@@ -14,9 +14,10 @@ function addImage(element) {
 
 module.exports = {
     add: function(element) {
-        if (element && element.length)
-            element.forEach(item => addImage(item));
-        else addImage(element);
+        if (element && element.length) {
+            Array.prototype.forEach.call(element,
+                item => addImage(item));
+        } else addImage(element);
         return this;
     },
 
