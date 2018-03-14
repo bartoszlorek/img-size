@@ -11,14 +11,14 @@
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/ubery/img-size.git"
+        "url": "git+https://github.com/bartoszlorek/img-size.git"
     },
     "author": "Bartosz Lorek",
     "license": "MIT",
     "bugs": {
-        "url": "https://github.com/ubery/img-size/issues"
+        "url": "https://github.com/bartoszlorek/img-size/issues"
     },
-    "homepage": "https://github.com/ubery/img-size#readme",
+    "homepage": "https://github.com/bartoszlorek/img-size#readme",
     "devDependencies": {
         "babel-core": "^6.24.0",
         "babel-loader": "^6.4.1",
