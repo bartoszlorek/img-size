@@ -1,10 +1,10 @@
-import addResize from './utils/eventResize.js';
-import createImage from './image.js';
+import addResize from './utils/eventResize.js'
+import createImage from './image.js'
 
-const images = [];
+const images = []
 const onResize = addResize(() => {
-    images.forEach(img => img.resize());
-}, 50, 100);
+    images.forEach(img => img.resize())
+}, 50, 100)
 
 function addImage(element) {
     if (element && element.nodeType) {
@@ -16,9 +16,9 @@ module.exports = {
     add: function(element) {
         if (element && element.length) {
             Array.prototype.forEach.call(element,
-                item => addImage(item));
-        } else addImage(element);
-        return this;
+                item => addImage(item))
+        } else addImage(element)
+        return this
     },
 
     remove: function(element) {
@@ -27,9 +27,9 @@ module.exports = {
                 .map(img => img.image)
                 .indexOf(element);
             if (index !== -1) {
-                images.splice(index, 1);
+                images.splice(index, 1)
             }
         }
-        return this;
+        return this
     }
 }
