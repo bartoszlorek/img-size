@@ -1,26 +1,27 @@
-function loadImage(image, callback) {
-    if (image == null || callback == null) {
+function loadImage(source, callback) {
+    if (source == null || callback == null) {
         return
     }
-    if (image.complete) {
+    if (source.complete) {
         callback(
-            image,
-            image.naturalWidth,
-            image.naturalHeight
+            source,
+            source.naturalWidth,
+            source.naturalHeight
         )
     } else {
-        let src = image.src || image
-        if (typeof image === 'string') {
-            image = new Image()
-            image.src = src
+        let path = source.src || source
+        if (typeof path !== 'string') {
+            return
         }
+        let image = new Image()
         image.onload = () => {
             callback(
-                image,
+                source,
                 image.naturalWidth,
                 image.naturalHeight
             )
         }
+        image.src = path
     }
 }
 
