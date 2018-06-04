@@ -1,8 +1,9 @@
-(function() {
+;(function() {
+    const size = imgSize()
 
-    var images = document.getElementsByClassName('img-size'),
-        wide = document.getElementById('img-wide');
-        
-    imgSize.add(images);
+    let imgs = document.getElementsByClassName('img-size'),
+        wide = document.getElementById('img-wide')
 
-})();
+    size.attach(imgs)
+    //setTimeout(() => size.detach(wide), 500)
+})()
