@@ -1,9 +1,20 @@
 ;(function() {
     const size = imgSize()
 
-    let imgs = document.getElementsByClassName('img-size'),
-        wide = document.getElementById('img-wide')
+    let images = document.querySelectorAll('img'),
+        contain = document.getElementById('img-contain'),
+        cover = document.getElementById('img-cover')
 
-    size.attach(imgs)
-    //setTimeout(() => size.detach(wide), 500)
+    size.attach(images)
+
+    document.onkeydown = event => {
+        switch (event.code) {
+            case 'Enter':
+                return size.attach(cover)
+            case 'Space':
+                return size.detach(cover)
+            case 'Delete':
+                return size.destroy()
+        }
+    }
 })()

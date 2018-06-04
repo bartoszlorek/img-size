@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "start": "rollup --config --watch --environment DEVELOPMENT",
     "build": "rollup --config",
     "test": "jest",
     "test-watch": "npm test -- --watch"

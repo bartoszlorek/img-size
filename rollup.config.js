@@ -3,20 +3,23 @@ import commonjs from 'rollup-plugin-commonjs'
 import uglify from 'rollup-plugin-uglify'
 import babel from 'rollup-plugin-babel'
 
-export default {
-    entry: 'src/index.js',
-    output: [
-        {
-            file: './dist/img-size.umd.js',
-            format: 'umd',
-            name: 'imgSize'
-        },
-        {
-            file: './dist/img-size.min.js',
-            format: 'cjs'
-        }
-    ],
-    plugins: [
+let plugins
+    
+const babelConfig = {
+    babelrc: false,
+    exclude: 'node_modules/**',
+    presets: [['env', { modules: false }]],
+    plugins: ['external-helpers']
+}
+
+if (process.env.DEVELOPMENT) {
+    plugins = [
+        resolve(),
+        commonjs(),
+        babel(babelConfig)
+    ]
+} else {
+    plugins = [
         resolve(),
         commonjs(),
         uglify({
@@ -30,12 +33,26 @@ export default {
                 toplevel: true
             }
         }),
-        babel({
-            babelrc: false,
-            exclude: 'node_modules/**',
-            presets: [['env', { modules: false }]],
-            plugins: ['external-helpers']
-        })
+        babel(babelConfig)
+    ]
+}
+
+export default {
+    entry: 'src/index.js',
+    output: [
+        {
+            file: './dist/img-size.umd.js',
+            format: 'umd',
+            name: 'imgSize'
+        },
+        {
+            file: './dist/img-size.min.js',
+            format: 'cjs'
+        }
     ],
-    external: []
+    plugins,
+    external: [],
+    watch: {
+        include: 'src/**'
+    }
 }

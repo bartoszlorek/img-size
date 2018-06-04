@@ -1,10 +1,13 @@
-import ResizeSensor from 'resize-sensor'
 import objectAssign from 'object-assign'
 import parseNode from './.utils/parse-node'
 import loadImage from './.utils/load-image'
-import calcSize from './calc-size'
+
+import injectRules from './inject-rules'
+import createImage from './create-image'
+import deleteImage from './delete-image'
 
 const defaults = {
+    container: 'img-size-container',
     horizontal: 'img-size-h',
     vertical: 'img-size-v',
     contain: 'img-size-contain',
@@ -13,43 +16,48 @@ const defaults = {
 
 function imgSize(options) {
     const spec = objectAssign({}, defaults, options)
-    const images = []
+    let injected = injectRules(spec)
+    let images = []
 
     const addImage = element => {
-        let image = {
-            element,
-            handler: new ResizeSensor(
-                element.parentNode,
-                () => calcSize(image, spec)
-            )
-        }
-        images.push(image)
+        images.push(createImage(element, spec))
     }
 
     const removeImage = element => {
-        let index = images.length
-        while (index--) {
-            let image = images[index]
+        images = images.filter(image => {
             if (image.element === element) {
-                image.handler.detach()
-                image.handler = null
-                image.element = null
-                images.splice(index, 1)
-                return
+                return deleteImage(image, spec)
             }
+            return true
+        })
+    }
+
+    const isValidInstance = () => {
+        if (images === null) {
+            throw new Error('This ImgSize instance has been destroyed, so no operations can be performed on it.')
         }
+        return true
     }
 
     const api = {
         attach: elements => {
+            isValidInstance()
             parseNode(elements).forEach(elem => {
                 loadImage(elem, addImage)
             })
             return api
         },
         detach: elements => {
+            isValidInstance()
             parseNode(elements).forEach(removeImage)
             return api
+        },
+        destroy: () => {
+            document.head.removeChild(injected)
+            images.forEach(image => deleteImage(image, spec))
+            images = null
+            injected = null
+            return null
         }
     }
 
