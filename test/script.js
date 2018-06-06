@@ -1,5 +1,7 @@
 ;(function() {
-    const size = imgSize()
+    const size = imgSize({
+        accurate: false
+    })
 
     let images = document.querySelectorAll('img'),
         contain = document.getElementById('img-contain'),
