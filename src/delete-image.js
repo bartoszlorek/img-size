@@ -9,9 +9,12 @@ function deleteImage(image, spec) {
         spec.horizontal,
         spec.vertical
     ])
-    image.handler.detach()
-    image.handler = null
+
     image.element = null
+    if (spec.accurate) {
+        image.handler.detach()
+        image.handler = null
+    }
 }
 
 export default deleteImage

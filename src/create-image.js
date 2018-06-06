@@ -1,19 +1,22 @@
 import ResizeSensor from 'resize-sensor'
 import { addClass } from './.utils/class-list'
-import handleResize from './handle-resize'
+import updateImage from './update-image'
 
 function createImage(element, spec) {
-    const image = {
-        element,
-        handler: new ResizeSensor(
-            element.parentElement,
-            () => handleResize(image, spec)
+    let image = { element }
+
+    if (spec.accurate) {
+        image.handler = new ResizeSensor(
+            element.parentElement, () => {
+                updateImage(image, spec)
+            }
         )
     }
     addClass(
         element.parentElement,
         spec.container
     )
+    updateImage(image, spec)
     return image
 }
 

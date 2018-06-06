@@ -4,14 +4,16 @@ import boundingOffset from './.internal/bounding-offset'
 const shouldFitHorizontal = check => element => {
     return check(boundingOffset(element, element.parentElement))
 }
+
 const typeCover = shouldFitHorizontal(offset => {
     return offset.width > offset.height
 })
+
 const typeContain = shouldFitHorizontal(offset => {
     return offset.width < offset.height
 })
 
-function handleResize(image, spec) {
+function updateImage(image, spec) {
     const { element } = image
     const { horizontal, vertical, cover } = spec
 
@@ -24,4 +26,4 @@ function handleResize(image, spec) {
     }
 }
 
-export default handleResize
+export default updateImage
