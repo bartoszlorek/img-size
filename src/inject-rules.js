@@ -31,12 +31,12 @@ function insertRules(sheet, rules) {
 }
 
 function injectRules(spec) {
-    const element = document.createElement('style')
-    document.head.appendChild(element)
+    const elem = document.createElement('style')
+    document.head.appendChild(elem)
 
-    insertRules(element.sheet, makeRules(spec))
-    element.setAttribute(STYLE_ATTR, '')
-    return element
+    insertRules(elem.sheet, makeRules(spec))
+    elem.setAttribute(STYLE_ATTR, '')
+    return elem
 }
 
 export default injectRules

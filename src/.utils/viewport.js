@@ -24,108 +24,182 @@ function removeEventListener(elem, event, fn) {
     }
 }
 
+function dispatchEvent(elem, eventType) {
+    if (elem == null) {
+        return;
+    }
+    if (typeof Event === 'function') {
+        elem.dispatchEvent(new Event(eventType));
+    } else if (elem.document) {
+        var event = elem.document.createEvent('UIEvents');
+        event.initUIEvent(eventType, true, false, elem, 0);
+        elem.dispatchEvent(event);
+    }
+}
+
 function mapArguments(args, methods) {
     if (args != null) {
-        return function () {
-            return args.map(function (a) {
-                return methods[a]();
+        return function (event) {
+            var values = args.map(function (arg) {
+                return methods[arg]();
             });
+            values.unshift(event);
+            return values;
         };
     }
-    return function () {
-        return null;
+    return function (event) {
+        return [event];
     };
 }
 
-function createEvents(schema, methods) {
-    var events = {};
+function isEqualArray(arrayA, arrayB, offset) {
+    var lengthA = arrayA == null ? 0 : arrayA.length;
+    var lengthB = arrayB == null ? 0 : arrayB.length;
 
-    Object.keys(schema).forEach(function (name) {
+    if (lengthA !== lengthB) {
+        return false;
+    }
+    var index = offset !== undefined ? offset - 1 : -1;
+    while (++index < lengthA) {
+        if (arrayA[index] !== arrayB[index]) {
+            return false;
+        }
+    }
+    return true;
+}
+
+var toConsumableArray = function (arr) {
+  if (Array.isArray(arr)) {
+    for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i];
+
+    return arr2;
+  } else {
+    return Array.from(arr);
+  }
+};
+
+function Container(items, loaded, unloaded) {
+    this.items = items != null ? [].concat(toConsumableArray(items)) : [];
+    this.loaded = loaded || null;
+    this.unloaded = unloaded || null;
+}
+
+Container.prototype = {
+    get length() {
+        return this.items.length;
+    },
+
+    add: function add(item) {
+        var index = this.items.indexOf(item);
+        if (index === -1) {
+            this.items.push(item);
+            if (this.loaded && this.items.length === 1) {
+                this.loaded(this);
+            }
+        }
+    },
+
+    remove: function remove(item) {
+        var index = this.items.indexOf(item);
+        if (index > -1) {
+            this.items.splice(index, 1);
+            if (this.unloaded && !this.items.length) {
+                this.unloaded(this);
+            }
+        }
+    },
+
+    empty: function empty() {
+        this.items = [];
+        if (this.unloaded) {
+            this.unloaded(this);
+        }
+    },
+
+    forEach: function forEach(iteratee) {
+        var index = -1;
+        var length = this.items.length;
+        while (++index < length) {
+            if (iteratee(this.items[index], index, this.items) === false) {
+                return;
+            }
+        }
+    }
+};
+
+function createEvent(runtime) {
+
+    var addEventPublisher = function addEventPublisher(_ref) {
+        var type = _ref.type,
+            publisher = _ref.publisher;
+
+        type.forEach(function (name) {
+            runtime.addEventListener(runtime.view, name, publisher);
+        });
+    };
+    var removeEventPublisher = function removeEventPublisher(_ref2) {
+        var type = _ref2.type,
+            publisher = _ref2.publisher;
+
+        type.forEach(function (name) {
+            runtime.removeEventListener(runtime.view, name, publisher);
+        });
+    };
+
+    return function (options, methods) {
         var cachedValues = [];
-        var _schema$name = schema[name],
-            type = _schema$name.type,
-            args = _schema$name.args;
 
-        var execArguments = mapArguments(args, methods);
-
+        var execArguments = mapArguments(options.args, methods);
         var self = {
-            type: type,
-            subscribers: [],
-            publisher: function publisher(forceUpdate) {
-                var length = self.subscribers.length;
-                var values = execArguments();
+            type: options.type,
+            subscribers: new Container(null, function () {
+                return addEventPublisher(self);
+            }, function () {
+                return removeEventPublisher(self);
+            }),
 
-                if (forceUpdate !== true && values !== null) {
-                    var shouldUpdate = values.some(function (value, index) {
-                        return cachedValues[index] !== value;
-                    });
+            publisher: function publisher(event) {
+                var values = execArguments(event),
+                    result = void 0;
+
+                if (values.length > 1) {
+                    var shouldUpdate = !isEqualArray(cachedValues, values, 1);
+
                     cachedValues = values;
                     if (!shouldUpdate) {
                         return false;
                     }
                 }
-
-                var index = -1;
-                while (++index < length) {
-                    self.subscribers[index].apply(null, values);
+                self.subscribers.forEach(function (subscriber) {
+                    result = subscriber.apply(null, values);
+                });
+                if (result !== undefined) {
+                    event.returnValue = result;
                 }
+                return result;
+            },
+
+            clearCache: function clearCache() {
+                cachedValues = [];
+                return self;
             }
         };
-        events[name] = self;
+
+        return self;
+    };
+}
+
+function bindMethods(view, methods) {
+    var result = {};
+    Object.keys(methods).forEach(function (name) {
+        result[name] = function () {
+            return methods[name](view, view.document);
+        };
     });
-
-    return events;
+    return result;
 }
 
-function createListener(addEventListener, removeEventListener) {
-
-    var addPublisher = function addPublisher(_ref) {
-        var type = _ref.type,
-            publisher = _ref.publisher;
-
-        type.forEach(function (name) {
-            return addEventListener(name, publisher);
-        });
-    };
-
-    var removePublisher = function removePublisher(_ref2) {
-        var type = _ref2.type,
-            publisher = _ref2.publisher;
-
-        type.forEach(function (name) {
-            return removeEventListener(name, publisher);
-        });
-    };
-
-    return {
-        add: function add(event, fn) {
-            var index = event.subscribers.indexOf(fn);
-            if (index === -1) {
-                event.subscribers.push(fn);
-                if (event.subscribers.length === 1) {
-                    addPublisher(event);
-                }
-            }
-        },
-
-        remove: function remove(event, fn) {
-            var index = event.subscribers.indexOf(fn);
-            if (index > -1) {
-                event.subscribers.splice(index, 1);
-                if (!event.subscribers.length) {
-                    removePublisher(event);
-                }
-            }
-        },
-
-        removeAll: function removeAll(event) {
-            event.subscribers = [];
-            removePublisher(event);
-        }
-    };
-}
-
-var EVENT_SCHEMA = {
+var EVENT_OPTIONS = {
     load: {
         type: ['load']
     },
@@ -143,17 +217,17 @@ var EVENT_SCHEMA = {
 };
 
 var EVENT_METHODS = {
-    width: function width() {
-        return window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
+    width: function width(win, doc) {
+        return win.innerWidth || doc.documentElement.clientWidth || doc.body.clientWidth;
     },
-    height: function height() {
-        return window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
+    height: function height(win, doc) {
+        return win.innerHeight || doc.documentElement.clientHeight || doc.body.clientHeight;
     },
-    scrollX: function scrollX() {
-        return window.scrollX || window.pageXOffset;
+    scrollX: function scrollX(win, doc) {
+        return win.scrollX || win.pageXOffset;
     },
-    scrollY: function scrollY() {
-        return window.scrollY || window.pageYOffset;
+    scrollY: function scrollY(win, doc) {
+        return win.scrollY || win.pageYOffset;
     }
 };
 
@@ -162,22 +236,30 @@ var EVENT_METHODS = {
 function createViewport() {
     var view = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : window;
 
-    var events = createEvents(EVENT_SCHEMA, EVENT_METHODS);
+    var methods = bindMethods(view, EVENT_METHODS);
+    var events = {};
+
+    var createEvent$$1 = createEvent({
+        addEventListener: addEventListener,
+        removeEventListener: removeEventListener,
+        view: view
+    });
+    Object.keys(EVENT_OPTIONS).forEach(function (name) {
+        events[name] = createEvent$$1(EVENT_OPTIONS[name], methods);
+    });
 
     var getValidEvent = function getValidEvent(name) {
         if (!events[name]) {
-            throw new Error('The \'' + name + '\' is not a valid event name.');
+            throw new Error('\'' + name + '\' is not a valid event name');
         }
         return events[name];
     };
-
-    var listener = createListener(addEventListener.bind(null, view), removeEventListener.bind(null, view));
 
     var api = {
         on: function on(name, fn) {
             var event = getValidEvent(name);
             if (typeof fn === 'function') {
-                listener.add(event, fn);
+                event.subscribers.add(fn);
             }
             return api;
         },
@@ -185,27 +267,28 @@ function createViewport() {
         off: function off(name, fn) {
             if (name === undefined) {
                 Object.keys(events).forEach(function (name) {
-                    listener.removeAll(events[name]);
+                    events[name].subscribers.empty();
                 });
             } else {
                 var event = getValidEvent(name);
                 if (typeof fn === 'function') {
-                    listener.remove(event, fn);
+                    event.subscribers.remove(fn);
                 } else if (fn === undefined) {
-                    listener.removeAll(event);
+                    event.subscribers.empty();
                 }
             }
             return api;
         },
 
         trigger: function trigger(name) {
-            getValidEvent(name).publisher(true);
+            var event = getValidEvent(name).clearCache();
+            dispatchEvent(view, event.type[0]);
             return api;
         }
 
         // add static methods to the API
-    };Object.keys(EVENT_METHODS).forEach(function (name) {
-        api[name] = EVENT_METHODS[name];
+    };Object.keys(methods).forEach(function (name) {
+        api[name] = methods[name];
     });
 
     return api;

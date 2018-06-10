@@ -1,8 +1,8 @@
-import { hasClass, addClass, removeClass } from './.utils/class-list'
+import { hasClass, addClass, removeClass } from './.utils/class-polyfill'
 import boundingOffset from './.internal/bounding-offset'
 
-const shouldFitHorizontal = check => element => {
-    return check(boundingOffset(element, element.parentElement))
+const shouldFitHorizontal = check => elem => {
+    return check(boundingOffset(elem, elem.parentElement))
 }
 
 const typeCover = shouldFitHorizontal(offset => {
@@ -13,16 +13,15 @@ const typeContain = shouldFitHorizontal(offset => {
     return offset.width < offset.height
 })
 
-function updateImage(image, spec) {
-    const { element } = image
+function updateImage(elem, spec) {
     const { horizontal, vertical, cover } = spec
 
-    let predicate = hasClass(element, cover) ? typeCover : typeContain,
-        className = predicate(element) ? horizontal : vertical
+    let isHorizontal = (hasClass(elem, cover) ? typeCover : typeContain)(elem),
+        className = isHorizontal ? horizontal : vertical
 
-    if (!hasClass(element, className)) {
-        removeClass(element, className !== horizontal ? horizontal : vertical)
-        addClass(element, className)
+    if (!hasClass(elem, className)) {
+        removeClass(elem, isHorizontal ? vertical : horizontal)
+        addClass(elem, className)
     }
 }
 

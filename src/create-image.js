@@ -1,23 +1,13 @@
-import ResizeSensor from 'resize-sensor'
-import { addClass } from './.utils/class-list'
+import { addClass } from './.utils/class-polyfill'
 import updateImage from './update-image'
 
-function createImage(element, spec) {
-    let image = { element }
-
-    if (spec.accurate) {
-        image.handler = new ResizeSensor(
-            element.parentElement, () => {
-                updateImage(image, spec)
-            }
-        )
-    }
+function createImage(elem, spec) {
     addClass(
-        element.parentElement,
+        elem.parentElement,
         spec.container
     )
-    updateImage(image, spec)
-    return image
+    updateImage(elem, spec)
+    return elem
 }
 
 export default createImage

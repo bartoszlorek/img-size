@@ -1,20 +1,15 @@
-import { removeClass } from './.utils/class-list'
+import { removeClass } from './.utils/class-polyfill'
 
-function deleteImage(image, spec) {
+function deleteImage(elem, spec) {
     removeClass(
-        image.element.parentElement,
+        elem.parentElement,
         spec.container
     )
-    removeClass(image.element, [
+    removeClass(elem, [
         spec.horizontal,
         spec.vertical
     ])
-
-    image.element = null
-    if (spec.accurate) {
-        image.handler.detach()
-        image.handler = null
-    }
+    return null
 }
 
 export default deleteImage

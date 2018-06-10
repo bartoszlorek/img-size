@@ -9,7 +9,6 @@ import deleteImage from './delete-image'
 import updateImage from './update-image'
 
 const defaults = {
-    accurate: false,
     container: 'img-size-container',
     horizontal: 'img-size-h',
     vertical: 'img-size-v',
@@ -17,23 +16,20 @@ const defaults = {
     cover: 'img-size-cover'
 }
 
-let viewport = null
+const viewport = createViewport()
 
 function imgSize(options) {
     const spec = objectAssign({}, defaults, options)
     let injected = injectRules(spec)
     let images = []
 
-    const addImage = element => {
-        images.push(createImage(element, spec))
+    const addImage = elem => {
+        images.push(createImage(elem, spec))
     }
 
-    const removeImage = element => {
-        images = images.filter(image => {
-            if (image.element === element) {
-                return deleteImage(image, spec)
-            }
-            return true
+    const removeImage = elem => {
+        images = images.filter(img => {
+            return img === elem ? deleteImage(elem, spec) : true
         })
     }
 
@@ -47,30 +43,27 @@ function imgSize(options) {
 
     const isValidInstance = () => {
         if (images === null) {
-            throw new Error('This ImgSize instance has been destroyed, so no operations can be performed on it.')
+            throw new Error(
+                'This ImgSize instance has been destroyed, so no operations can be performed on it.'
+            )
         }
         return true
     }
 
-    if (!spec.accurate) {
-        if (viewport === null) {
-            viewport = createViewport()
-        }
-        viewport.on('resize', updateImages)
-    }
+    viewport.on('resize', updateImages)
 
     const api = {
-        attach: elements => {
+        attach: element => {
             isValidInstance()
-            parseNode(elements).forEach(elem => {
+            parseNode(element).forEach(elem => {
                 loadImage(elem, addImage)
             })
             return api
         },
 
-        detach: elements => {
+        detach: element => {
             isValidInstance()
-            parseNode(elements).forEach(removeImage)
+            parseNode(element).forEach(removeImage)
             return api
         },
 
@@ -81,13 +74,9 @@ function imgSize(options) {
         },
 
         destroy: () => {
-            if (!spec.accurate) {
-                viewport.off('resize', updateImages)
-            }
+            viewport.off('resize', updateImages)
             document.head.removeChild(injected)
-            images.forEach(image => {
-                deleteImage(image, spec)
-            })
+            images.forEach(image => deleteImage(image, spec))
             images = null
             injected = null
             return null
