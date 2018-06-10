@@ -13,7 +13,7 @@ export function hasClass(element, className) {
 export function addClass(element, className) {
     let classes = classToArray(className)
     if (element.classList) {
-        element.classList.add.apply(null, classes)
+        element.classList.add.apply(element.classList, classes)
     } else {
         let result = element.className
         for (let i = 0; i < classes.length; i++) {
@@ -28,7 +28,7 @@ export function addClass(element, className) {
 export function removeClass(element, className) {
     let classes = classToArray(className)
     if (element.classList) {
-        element.classList.remove.apply(null, classes)
+        element.classList.remove.apply(element.classList, classes)
     } else {
         let current = classToArray(element.className),
             result = ''

@@ -186,18 +186,8 @@ function isEqualArray(arrayA, arrayB, offset) {
     return true;
 }
 
-var toConsumableArray = function toConsumableArray(arr) {
-    if (Array.isArray(arr)) {
-        for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) {
-            arr2[i] = arr[i];
-        }return arr2;
-    } else {
-        return Array.from(arr);
-    }
-};
-
 function Container(items, loaded, unloaded) {
-    this.items = items != null ? [].concat(toConsumableArray(items)) : [];
+    this.items = items != null ? items.slice() : [];
     this.loaded = loaded || null;
     this.unloaded = unloaded || null;
 }
@@ -452,7 +442,7 @@ function hasClass(element, className) {
 function addClass(element, className) {
     var classes = classToArray(className);
     if (element.classList) {
-        element.classList.add.apply(null, classes);
+        element.classList.add.apply(element.classList, classes);
     } else {
         var result = element.className;
         for (var i = 0; i < classes.length; i++) {
@@ -467,7 +457,7 @@ function addClass(element, className) {
 function removeClass(element, className) {
     var classes = classToArray(className);
     if (element.classList) {
-        element.classList.remove.apply(null, classes);
+        element.classList.remove.apply(element.classList, classes);
     } else {
         var current = classToArray(element.className),
             result = '';

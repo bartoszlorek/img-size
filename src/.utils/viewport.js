@@ -68,18 +68,8 @@ function isEqualArray(arrayA, arrayB, offset) {
     return true;
 }
 
-var toConsumableArray = function (arr) {
-  if (Array.isArray(arr)) {
-    for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i];
-
-    return arr2;
-  } else {
-    return Array.from(arr);
-  }
-};
-
 function Container(items, loaded, unloaded) {
-    this.items = items != null ? [].concat(toConsumableArray(items)) : [];
+    this.items = items != null ? items.slice() : [];
     this.loaded = loaded || null;
     this.unloaded = unloaded || null;
 }
