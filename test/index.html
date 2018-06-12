@@ -4,6 +4,8 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
     <link rel="stylesheet" href="./style.css" type="text/css" />
+    <link href="https://fonts.googleapis.com/css?family=Fira+Mono:400,500&amp;subset=latin-ext" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="http://bartoszlorek.pl/run/.global/demo.style.css">
     <title>img-size</title>
 </head>
 <body>
@@ -14,6 +16,26 @@
         <img id="img-cover" class="img-size-cover" src="http://bartoszlorek.pl/run/cat/tall.jpg" />
     </div>
     <script src="../dist/img-size.umd.js"></script>
-    <script src="./script.js"></script>
+    <script>
+        ;(function() {
+            var size = imgSize(),
+                images = document.querySelectorAll('img'),
+                contain = document.querySelector('#img-contain'),
+                cover = document.querySelector('#img-cover')
+
+            size.attach(images)
+
+            document.onkeydown = function(event) {
+                switch (event.code) {
+                    case 'Enter':
+                        return size.attach(cover)
+                    case 'Space':
+                        return size.detach(cover)
+                    case 'Delete':
+                        return size.destroy()
+                }
+            }
+        })()
+    </script>
 </body>
 </html>

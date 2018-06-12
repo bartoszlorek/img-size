@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <link rel="stylesheet" href="./style.css" type="text/css" />
+    <link href="https://fonts.googleapis.com/css?family=Fira+Mono:400,500&amp;subset=latin-ext" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="http://bartoszlorek.pl/run/.global/demo.style.css">
+    <title>img-size</title>
+</head>
+<body>
+    <h1>200 kittens</h1>
+    <div id="cats" class="grid"></div>
+    <script src="../dist/img-size.umd.js"></script>
+    <script>
+        ;(function() {
+            var createCat = function(parent) {
+                var div = document.createElement('div'),
+                    img = document.createElement('img')
+                img.src = 'http://bartoszlorek.pl/run/cat/tall.jpg'
+                div.className = 'grid__cell'
+                div.appendChild(img)
+                if (parent) {
+                    parent.appendChild(div)
+                }
+                return img
+            }
+            var size = imgSize(),
+                cats = document.querySelector('#cats')
+
+            for (var i = 0; i < 200; i++) {
+                size.attach(createCat(cats))
+            }
+        })()
+    </script>
+</body>
+</html>
